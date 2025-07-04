@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1.6;
+  }
+  
+  .font-heading {
+    font-family: 'Cormorant Garamond', serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-baby-pink hover:bg-baby-pink/90 text-dark-gray font-medium py-3 px-6 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg;
+  }
+  
+  .btn-secondary {
+    @apply bg-white border-2 border-baby-pink text-baby-pink hover:bg-baby-pink hover:text-white font-medium py-3 px-6 rounded-lg transition-all duration-300;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+  
+  .loader {
+    @apply animate-spin rounded-full h-8 w-8 border-b-2 border-baby-pink;
+  }
+
+  .coral-pink-button {
+    background: linear-gradient(
+      45deg,
+      #FF7F7F,
+      #FFB6C1,
+      #F8BBD9,
+      #FFB6C1,
+      #FF7F7F,
+      #F8BBD9
+    );
+    background-size: 400% 400%;
+    animation: coral-pink-animation 3s ease-in-out infinite;
+    border: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .coral-pink-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.3),
+      rgba(255, 255, 255, 0.1)
+    );
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  .coral-pink-button:hover {
+    animation-duration: 1.5s;
+  }
+}
+
+@keyframes coral-pink-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.zoom-image {
+  transition: transform 0.3s ease;
+}
+
+.zoom-image:hover {
+  transform: scale(1.05);
+}
+
+.sticky-header {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+}
