@@ -4,11 +4,27 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
 
+console.log('🔧 Supabase: Initializing client with URL:', supabaseUrl ? 'Set' : 'Not set');
+console.log('🔧 Supabase: Anon key:', supabaseAnonKey ? 'Set' : 'Not set');
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    flowType: 'pkce'
+  }
+});
+
+// Test connection
+supabase.auth.getSession().then(({ data, error }) => {
+  if (error) {
+    console.error('❌ Supabase: Connection error:', error);
+  } else {
+    console.log('✅ Supabase: Connected successfully');
+    if (data.session) {
+      console.log('✅ Supabase: Found existing session for:', data.session.user.email);
+    }
   }
 });
 

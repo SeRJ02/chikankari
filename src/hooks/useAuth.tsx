@@ -5,9 +5,9 @@ import { User, AuthState } from '../types';
 import { ADMIN_EMAIL } from '../utils/constants';
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
-  signup: (email: string, password: string, name: string) => Promise<boolean>;
+  signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,13 +20,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
+    console.log('🔐 Auth: Initializing authentication...');
+    
     // Get initial session
     const getInitialSession = async () => {
       try {
+        console.log('🔐 Auth: Getting initial session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Error getting session:', error);
+          console.error('❌ Auth: Error getting session:', error);
           setAuthState({
             user: null,
             isLoading: false,
@@ -36,6 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (session?.user) {
+          console.log('✅ Auth: Found existing session for:', session.user.email);
           const user = await getUserProfile(session.user);
           setAuthState({
             user,
@@ -43,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             isAuthenticated: true,
           });
         } else {
+          console.log('ℹ️ Auth: No existing session found');
           setAuthState({
             user: null,
             isLoading: false,
@@ -50,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           });
         }
       } catch (error) {
-        console.error('Error in getInitialSession:', error);
+        console.error('❌ Auth: Error in getInitialSession:', error);
         setAuthState({
           user: null,
           isLoading: false,
@@ -64,30 +69,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('🔄 Auth: State changed:', event, session?.user?.email);
         
-        if (session?.user) {
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('✅ Auth: User signed in:', session.user.email);
           const user = await getUserProfile(session.user);
           setAuthState({
             user,
             isLoading: false,
             isAuthenticated: true,
           });
-        } else {
+        } else if (event === 'SIGNED_OUT') {
+          console.log('👋 Auth: User signed out');
           setAuthState({
             user: null,
             isLoading: false,
             isAuthenticated: false,
           });
+        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+          console.log('🔄 Auth: Token refreshed for:', session.user.email);
+          const user = await getUserProfile(session.user);
+          setAuthState({
+            user,
+            isLoading: false,
+            isAuthenticated: true,
+          });
         }
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('🧹 Auth: Cleaning up auth listener');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const getUserProfile = async (supabaseUser: SupabaseUser): Promise<User> => {
     try {
+      console.log('👤 Auth: Getting profile for user:', supabaseUser.email);
+      
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -95,11 +115,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-        console.error('Error fetching user profile:', error);
+        console.error('❌ Auth: Error fetching user profile:', error);
       }
 
       // If no profile exists, create one
       if (!profile) {
+        console.log('📝 Auth: Creating new profile for:', supabaseUser.email);
         const newProfile = {
           id: supabaseUser.id,
           email: supabaseUser.email || '',
@@ -112,12 +133,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .insert(newProfile);
 
         if (insertError) {
-          console.error('Error creating user profile:', insertError);
+          console.error('❌ Auth: Error creating user profile:', insertError);
+        } else {
+          console.log('✅ Auth: Profile created successfully');
         }
 
         return newProfile;
       }
 
+      console.log('✅ Auth: Profile loaded:', profile.email, 'Role:', profile.role);
       return {
         id: profile.id,
         email: profile.email,
@@ -125,7 +149,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role: profile.role,
       };
     } catch (error) {
-      console.error('Error in getUserProfile:', error);
+      console.error('❌ Auth: Error in getUserProfile:', error);
       // Fallback user object
       return {
         id: supabaseUser.id,
@@ -136,40 +160,55 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
+      console.log('🔐 Auth: Attempting login for:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
       if (error) {
-        console.error('Login error:', error);
-        return false;
+        console.error('❌ Auth: Login error:', error.message);
+        return { 
+          success: false, 
+          error: error.message || 'Login failed. Please check your credentials.' 
+        };
       }
 
-      return !!data.user;
+      if (data.user) {
+        console.log('✅ Auth: Login successful for:', data.user.email);
+        return { success: true };
+      }
+
+      return { success: false, error: 'Login failed. Please try again.' };
     } catch (error) {
-      console.error('Login error:', error);
-      return false;
+      console.error('❌ Auth: Login error:', error);
+      return { success: false, error: 'An unexpected error occurred. Please try again.' };
     }
   };
 
   const logout = async () => {
     try {
+      console.log('👋 Auth: Logging out...');
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('Logout error:', error);
+        console.error('❌ Auth: Logout error:', error);
+      } else {
+        console.log('✅ Auth: Logout successful');
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('❌ Auth: Logout error:', error);
     }
   };
 
-  const signup = async (email: string, password: string, name: string): Promise<boolean> => {
+  const signup = async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string }> => {
     try {
+      console.log('📝 Auth: Attempting signup for:', email);
+      
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
         options: {
           data: {
@@ -179,16 +218,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (error) {
-        console.error('Signup error:', error);
-        return false;
+        console.error('❌ Auth: Signup error:', error.message);
+        return { 
+          success: false, 
+          error: error.message || 'Signup failed. Please try again.' 
+        };
       }
 
-      return !!data.user;
+      if (data.user) {
+        console.log('✅ Auth: Signup successful for:', data.user.email);
+        return { success: true };
+      }
+
+      return { success: false, error: 'Signup failed. Please try again.' };
     } catch (error) {
-      console.error('Signup error:', error);
-      return false;
+      console.error('❌ Auth: Signup error:', error);
+      return { success: false, error: 'An unexpected error occurred. Please try again.' };
     }
   };
+
+  console.log('🔍 Auth: Current state:', {
+    isAuthenticated: authState.isAuthenticated,
+    userEmail: authState.user?.email,
+    userRole: authState.user?.role,
+    isLoading: authState.isLoading
+  });
 
   return (
     <AuthContext.Provider value={{

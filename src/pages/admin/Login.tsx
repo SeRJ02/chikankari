@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { ADMIN_EMAIL } from '../../utils/constants';
 
@@ -15,7 +15,19 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const [success, setSuccess] = useState('');
+  const { login, isAuthenticated, user } = useAuth();
+
+  // Auto-close if user becomes authenticated
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log('✅ Login: User authenticated, closing modal');
+      setSuccess(`Welcome back, ${user.name}!`);
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    }
+  }, [isAuthenticated, user, onClose]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -24,25 +36,40 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
       [name]: value
     }));
     setError('');
+    setSuccess('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setSuccess('');
+
+    console.log('🔐 Login: Attempting login with:', formData.email);
 
     try {
-      const success = await login(formData.email, formData.password);
-      if (success) {
-        onClose();
+      const result = await login(formData.email, formData.password);
+      
+      if (result.success) {
+        console.log('✅ Login: Login successful');
+        setSuccess('Login successful! Redirecting...');
       } else {
-        setError('Invalid email or password');
+        console.error('❌ Login: Login failed:', result.error);
+        setError(result.error || 'Login failed. Please check your credentials.');
       }
     } catch (err) {
-      setError('Login failed. Please try again.');
+      console.error('❌ Login: Unexpected error:', err);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDemoLogin = () => {
+    setFormData({
+      email: ADMIN_EMAIL,
+      password: 'admin123'
+    });
   };
 
   return (
@@ -75,7 +102,7 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
                 onChange={handleInputChange}
                 required
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-baby-pink focus:border-transparent transition-colors duration-300"
-                placeholder={ADMIN_EMAIL}
+                placeholder="Enter your email"
               />
             </div>
           </div>
@@ -107,8 +134,16 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start space-x-2">
+              <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={16} />
               <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
+          {success && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-start space-x-2">
+              <CheckCircle className="text-green-500 flex-shrink-0 mt-0.5" size={16} />
+              <p className="text-green-600 text-sm">{success}</p>
             </div>
           )}
 
@@ -132,6 +167,7 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
               type="button"
               onClick={onClose}
               className="w-full btn-secondary"
+              disabled={isLoading}
             >
               Cancel
             </button>
@@ -139,9 +175,15 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500">
-            Demo credentials: {ADMIN_EMAIL} / admin123
-          </p>
+          <div className="border-t border-gray-200 pt-4">
+            <p className="text-xs text-gray-500 mb-2">Demo credentials:</p>
+            <button
+              onClick={handleDemoLogin}
+              className="text-xs text-baby-pink hover:text-baby-pink/80 underline"
+            >
+              Use demo login ({ADMIN_EMAIL})
+            </button>
+          </div>
         </div>
       </div>
     </div>
