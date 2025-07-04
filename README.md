@@ -25,6 +25,7 @@ A beautiful e-commerce website showcasing authentic Lucknowi Chikankari kurtas, 
 
 - Node.js 18+ 
 - npm or yarn
+- Supabase account
 
 ### Installation
 
@@ -44,12 +45,62 @@ npm install
 cp .env.example .env
 ```
 
-4. Update the `.env` file with your Supabase credentials and other configuration.
+4. **Set up Supabase:**
 
-5. Start the development server:
+   a. Go to [https://supabase.com](https://supabase.com) and create a new project
+   
+   b. Copy your project URL and anon key from Settings > API
+   
+   c. Update the `.env` file with your Supabase credentials:
+   ```env
+   VITE_SUPABASE_URL=https://your-project-id.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key-here
+   ```
+
+5. **Run the database migrations:**
+
+   a. In your Supabase dashboard, go to the SQL Editor
+   
+   b. Run each migration file in order:
+      - `supabase/migrations/001_initial_setup.sql`
+      - `supabase/migrations/002_seed_data.sql`
+      - `supabase/migrations/003_additional_features.sql`
+
+6. Start the development server:
 ```bash
 npm run dev
 ```
+
+## Database Setup
+
+The project uses Supabase for the backend. The database schema includes:
+
+### Tables:
+- **profiles**: User profiles with role-based access
+- **products**: Product catalog with full e-commerce features
+- **categories**: Product categorization
+- **orders**: Order management (future feature)
+- **order_items**: Order details (future feature)
+
+### Key Features:
+- **Row Level Security (RLS)**: Enabled on all tables
+- **Admin Role**: Special permissions for product management
+- **Auto-generated profiles**: Created automatically on user signup
+- **Full-text search**: Advanced product search capabilities
+- **Inventory management**: Stock tracking and low-stock alerts
+
+### Migration Files:
+
+1. **001_initial_setup.sql**: Creates core tables (profiles, products) with RLS policies
+2. **002_seed_data.sql**: Inserts sample product data
+3. **003_additional_features.sql**: Adds categories, orders, search functions, and views
+
+## Admin Access
+
+- **Email**: admin@lucknowchikan.com
+- **Password**: admin123 (Change this in production!)
+
+The admin user is automatically assigned admin role when signing up with the configured admin email.
 
 ## Environment Variables
 
@@ -75,20 +126,6 @@ VITE_TWITTER_URL=https://twitter.com/chikankaribykanchan
 VITE_YOUTUBE_URL=https://youtube.com/chikankaribykanchan
 ```
 
-## Database Setup
-
-The project uses Supabase for the backend. The database schema includes:
-
-- **profiles**: User profiles with role-based access
-- **products**: Product catalog with full e-commerce features
-
-Migration files are included in the `supabase/migrations` directory.
-
-## Admin Access
-
-- **Email**: admin@lucknowchikan.com
-- **Password**: admin123 (Change this in production!)
-
 ## Deployment
 
 ### Netlify Deployment
@@ -111,14 +148,40 @@ npm run build
 ```
 src/
 ├── components/          # Reusable UI components
+│   ├── admin/          # Admin-specific components
+│   ├── Header.tsx      # Navigation header
+│   ├── Hero.tsx        # Landing page hero
+│   ├── ProductGallery.tsx  # Product listing
+│   └── ...
 ├── pages/              # Page components
+│   └── admin/          # Admin pages
 ├── hooks/              # Custom React hooks
+│   ├── useAuth.tsx     # Authentication hook
+│   └── useProducts.tsx # Product management hook
 ├── lib/                # Third-party library configurations
+│   └── supabase.ts     # Supabase client setup
 ├── types/              # TypeScript type definitions
 ├── utils/              # Utility functions and constants
 ├── data/               # Mock data and constants
 └── index.css           # Global styles
+
+supabase/
+└── migrations/         # Database migration files
+    ├── 001_initial_setup.sql
+    ├── 002_seed_data.sql
+    └── 003_additional_features.sql
 ```
+
+## API Endpoints
+
+The application uses Supabase's auto-generated REST API:
+
+- `GET /rest/v1/products` - List all products
+- `POST /rest/v1/products` - Create product (admin only)
+- `PATCH /rest/v1/products?id=eq.{id}` - Update product (admin only)
+- `DELETE /rest/v1/products?id=eq.{id}` - Delete product (admin only)
+- `GET /rest/v1/profiles` - User profiles
+- `GET /rest/v1/categories` - Product categories
 
 ## Contributing
 
@@ -127,6 +190,19 @@ src/
 3. Make your changes
 4. Test thoroughly
 5. Submit a pull request
+
+## Troubleshooting
+
+### Common Issues:
+
+1. **Supabase connection errors**: Verify your URL and anon key in `.env`
+2. **Authentication issues**: Check if the admin email matches `VITE_ADMIN_EMAIL`
+3. **Migration errors**: Run migrations in the correct order
+4. **RLS policy errors**: Ensure user has proper role assigned
+
+### Debug Mode:
+
+The application includes extensive console logging. Check browser console for detailed error messages.
 
 ## License
 
