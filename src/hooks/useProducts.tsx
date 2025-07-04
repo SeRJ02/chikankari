@@ -64,8 +64,7 @@ export const useProducts = () => {
       }
     } catch (err) {
       console.error('❌ useProducts: Error loading products:', err);
-      setError('Failed to load products');
-      // Fallback to mock data on error
+      // Fallback to mock data on error without setting user-facing error
       setProducts(mockProducts);
     } finally {
       setLoading(false);
