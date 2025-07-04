@@ -1,13 +1,31 @@
 import { createClient } from '@supabase/supabase-js';
 
-// These environment variables will be automatically populated when you connect to Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
+// Get environment variables with proper validation
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-console.log('🔧 Supabase: Initializing client with URL:', supabaseUrl ? 'Set' : 'Not set');
-console.log('🔧 Supabase: Anon key:', supabaseAnonKey ? 'Set' : 'Not set');
+// Validate environment variables
+if (!supabaseUrl || supabaseUrl === 'YOUR_SUPABASE_URL' || supabaseUrl === 'your_supabase_project_url') {
+  console.warn('⚠️ Supabase URL not configured. Using mock mode.');
+}
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+if (!supabaseAnonKey || supabaseAnonKey === 'YOUR_SUPABASE_ANON_KEY' || supabaseAnonKey === 'your_supabase_anon_key') {
+  console.warn('⚠️ Supabase Anon Key not configured. Using mock mode.');
+}
+
+// Use valid fallback URLs to prevent URL constructor errors
+const validSupabaseUrl = (supabaseUrl && supabaseUrl.startsWith('https://')) 
+  ? supabaseUrl 
+  : 'https://placeholder.supabase.co';
+
+const validSupabaseKey = (supabaseAnonKey && supabaseAnonKey.length > 10) 
+  ? supabaseAnonKey 
+  : 'placeholder-key';
+
+console.log('🔧 Supabase: Initializing client with URL:', validSupabaseUrl !== 'https://placeholder.supabase.co' ? 'Configured' : 'Using placeholder');
+console.log('🔧 Supabase: Anon key:', validSupabaseKey !== 'placeholder-key' ? 'Configured' : 'Using placeholder');
+
+export const supabase = createClient(validSupabaseUrl, validSupabaseKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -16,17 +34,21 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-// Test connection
-supabase.auth.getSession().then(({ data, error }) => {
-  if (error) {
-    console.error('❌ Supabase: Connection error:', error);
-  } else {
-    console.log('✅ Supabase: Connected successfully');
-    if (data.session) {
-      console.log('✅ Supabase: Found existing session for:', data.session.user.email);
+// Test connection only if we have valid credentials
+if (validSupabaseUrl !== 'https://placeholder.supabase.co' && validSupabaseKey !== 'placeholder-key') {
+  supabase.auth.getSession().then(({ data, error }) => {
+    if (error) {
+      console.error('❌ Supabase: Connection error:', error);
+    } else {
+      console.log('✅ Supabase: Connected successfully');
+      if (data.session) {
+        console.log('✅ Supabase: Found existing session for:', data.session.user.email);
+      }
     }
-  }
-});
+  });
+} else {
+  console.log('ℹ️ Supabase: Running in mock mode - please configure your Supabase credentials');
+}
 
 // Database types (will be auto-generated when you connect to Supabase)
 export interface Database {
