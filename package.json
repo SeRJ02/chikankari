@@ -1,7 +1,8 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "chikankari-by-kanchan",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "A beautiful e-commerce website showcasing authentic Lucknowi Chikankari kurtas",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -30,5 +31,16 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
     "vite": "^5.4.2"
-  }
+  },
+  "keywords": [
+    "chikankari",
+    "kurtas",
+    "indian-fashion",
+    "e-commerce",
+    "react",
+    "typescript",
+    "tailwind"
+  ],
+  "author": "Chikankari by Kanchan",
+  "license": "MIT"
 }
