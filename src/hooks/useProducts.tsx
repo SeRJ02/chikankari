@@ -3,6 +3,21 @@ import { supabase } from '../lib/supabase';
 import { Product } from '../types';
 import { products as mockProducts } from '../data/products';
 
+// Helper function to check if Supabase is properly configured
+const isSupabaseConfigured = () => {
+  const url = import.meta.env.VITE_SUPABASE_URL;
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  
+  return url && 
+         key && 
+         url !== 'YOUR_SUPABASE_URL' && 
+         url !== 'your_supabase_project_url' &&
+         key !== 'YOUR_SUPABASE_ANON_KEY' && 
+         key !== 'your_supabase_anon_key' &&
+         url.startsWith('https://') &&
+         key.length > 20;
+};
+
 export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,6 +33,15 @@ export const useProducts = () => {
       setLoading(true);
       setError(null);
 
+      // Check if Supabase is configured before attempting to fetch
+      if (!isSupabaseConfigured()) {
+        console.log('📦 useProducts: Supabase not configured, using mock products');
+        setProducts(mockProducts);
+        setLoading(false);
+        return;
+      }
+
+      console.log('🔄 useProducts: Attempting to fetch from Supabase...');
       const { data, error: supabaseError } = await supabase
         .from('products')
         .select('*')
@@ -29,10 +53,10 @@ export const useProducts = () => {
         // If table doesn't exist or other DB error, fall back to mock data
         if (supabaseError.code === '42P01' || supabaseError.code === 'PGRST116') {
           console.log('📦 useProducts: Table not found, using mock products');
-          setProducts(mockProducts);
         } else {
-          throw supabaseError;
+          console.log('📦 useProducts: Database error, falling back to mock products');
         }
+        setProducts(mockProducts);
       } else {
         console.log('📦 useProducts: Loaded products from Supabase:', data?.length || 0, 'products');
         
@@ -64,7 +88,8 @@ export const useProducts = () => {
       }
     } catch (err) {
       console.error('❌ useProducts: Error loading products:', err);
-      // Fallback to mock data on error without setting user-facing error
+      console.log('📦 useProducts: Network error or connection failed, using mock products');
+      // Always fallback to mock data on any error
       setProducts(mockProducts);
     } finally {
       setLoading(false);
@@ -91,6 +116,13 @@ export const useProducts = () => {
   });
 
   const updateProduct = async (updatedProduct: Product) => {
+    // Check if Supabase is configured before attempting operations
+    if (!isSupabaseConfigured()) {
+      console.log('⚠️ useProducts: Cannot update product - Supabase not configured');
+      setError('Database not configured. Please set up Supabase to manage products.');
+      return;
+    }
+
     try {
       console.log('🔄 useProducts: Updating product:', updatedProduct.name);
       
@@ -122,6 +154,13 @@ export const useProducts = () => {
   };
 
   const addProduct = async (newProduct: Product) => {
+    // Check if Supabase is configured before attempting operations
+    if (!isSupabaseConfigured()) {
+      console.log('⚠️ useProducts: Cannot add product - Supabase not configured');
+      setError('Database not configured. Please set up Supabase to manage products.');
+      return;
+    }
+
     try {
       console.log('➕ useProducts: Adding new product:', newProduct.name);
       
@@ -147,6 +186,13 @@ export const useProducts = () => {
   };
 
   const deleteProduct = async (productId: string) => {
+    // Check if Supabase is configured before attempting operations
+    if (!isSupabaseConfigured()) {
+      console.log('⚠️ useProducts: Cannot delete product - Supabase not configured');
+      setError('Database not configured. Please set up Supabase to manage products.');
+      return;
+    }
+
     try {
       console.log('🗑️ useProducts: Deleting product with ID:', productId);
       
