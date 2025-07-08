@@ -1,41 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, testSupabaseConnection } from '../lib/supabase';
 import { Product } from '../types';
 import { products as mockProducts } from '../data/products';
-
-// Helper function to check if Supabase is properly configured
-const isSupabaseConfigured = () => {
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  
-  return url && 
-         key && 
-         url !== 'YOUR_SUPABASE_URL' && 
-         url !== 'your_supabase_project_url' &&
-         key !== 'YOUR_SUPABASE_ANON_KEY' && 
-         key !== 'your_supabase_anon_key' &&
-         url.startsWith('https://') &&
-         key.length > 20;
-};
-
-// Helper function to test Supabase connection
-const testSupabaseConnection = async () => {
-  try {
-    console.log('🔍 Testing Supabase connection...');
-    const { data, error } = await supabase.from('products').select('count').limit(1);
-    
-    if (error) {
-      console.error('❌ Supabase connection test failed:', error);
-      return false;
-    }
-    
-    console.log('✅ Supabase connection test successful');
-    return true;
-  } catch (err) {
-    console.error('❌ Supabase connection test error:', err);
-    return false;
-  }
-};
 
 export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -48,7 +14,7 @@ export const useProducts = () => {
 
   const loadProducts = async () => {
     try {
-      console.log('🔄 useProducts: Starting to load products from Supabase...');
+      console.log('🔄 useProducts: Starting to load products...');
       setLoading(true);
       setError(null);
 
@@ -60,29 +26,48 @@ export const useProducts = () => {
         return;
       }
 
-      // Test connection first
+      // Test connection first with timeout
+      console.log('🔄 useProducts: Testing Supabase connection...');
       const connectionOk = await testSupabaseConnection();
+      
       if (!connectionOk) {
         console.log('📦 useProducts: Connection test failed, using mock products');
+        setError('Unable to connect to database. Using offline mode.');
         setProducts(mockProducts);
         setLoading(false);
         return;
       }
 
       console.log('🔄 useProducts: Attempting to fetch from Supabase...');
-      const { data, error: supabaseError } = await supabase
+      
+      // Add timeout to the fetch operation
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Fetch timeout')), 15000);
+      });
+
+      const fetchPromise = supabase
         .from('products')
         .select('*')
         .order('created_at', { ascending: false });
 
+      const { data, error: supabaseError } = await Promise.race([
+        fetchPromise,
+        timeoutPromise
+      ]) as any;
+
       if (supabaseError) {
         console.error('❌ useProducts: Supabase error:', supabaseError);
         
-        // If table doesn't exist or other DB error, fall back to mock data
+        // Handle specific error cases
         if (supabaseError.code === '42P01' || supabaseError.code === 'PGRST116') {
           console.log('📦 useProducts: Table not found, using mock products');
+          setError('Database table not found. Using sample data.');
+        } else if (supabaseError.message?.includes('Failed to fetch')) {
+          console.log('📦 useProducts: Network error, using mock products');
+          setError('Network connection failed. Using offline mode.');
         } else {
           console.log('📦 useProducts: Database error, falling back to mock products');
+          setError('Database error occurred. Using offline mode.');
         }
         setProducts(mockProducts);
       } else {
@@ -90,6 +75,7 @@ export const useProducts = () => {
         
         if (!data || data.length === 0) {
           console.log('📦 useProducts: No products in database, using mock products');
+          setError('No products found in database. Using sample data.');
           setProducts(mockProducts);
         } else {
           // Transform Supabase data to match our Product interface
@@ -112,18 +98,27 @@ export const useProducts = () => {
           }));
           
           setProducts(transformedProducts);
+          setError(null); // Clear any previous errors
         }
       }
     } catch (err) {
       console.error('❌ useProducts: Error loading products:', err);
       
       // Provide more specific error information
-      if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
-        console.log('📦 useProducts: Network fetch failed - possible CORS, network, or URL issue. Using mock products.');
-        setError('Unable to connect to database. Using offline mode.');
+      if (err instanceof Error) {
+        if (err.message.includes('Failed to fetch')) {
+          console.log('📦 useProducts: Network fetch failed - possible CORS, network, or URL issue. Using mock products.');
+          setError('Unable to connect to database. Using offline mode.');
+        } else if (err.message.includes('timeout')) {
+          console.log('📦 useProducts: Request timed out. Using mock products.');
+          setError('Database request timed out. Using offline mode.');
+        } else {
+          console.log('📦 useProducts: Unexpected error occurred, using mock products');
+          setError('An unexpected error occurred. Using offline mode.');
+        }
       } else {
-        console.log('📦 useProducts: Unexpected error occurred, using mock products');
-        setError('An unexpected error occurred. Using offline mode.');
+        console.log('📦 useProducts: Unknown error type, using mock products');
+        setError('An unknown error occurred. Using offline mode.');
       }
       
       // Always fallback to mock data on any error
@@ -165,13 +160,20 @@ export const useProducts = () => {
       
       const supabaseProduct = transformProductForSupabase(updatedProduct);
       
-      const { error } = await supabase
+      // Add timeout to update operation
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Update timeout')), 10000);
+      });
+
+      const updatePromise = supabase
         .from('products')
         .update({
           ...supabaseProduct,
           updated_at: new Date().toISOString(),
         })
         .eq('id', updatedProduct.id);
+
+      const { error } = await Promise.race([updatePromise, timeoutPromise]) as any;
 
       if (error) {
         console.error('❌ useProducts: Error updating product:', error);
@@ -186,7 +188,11 @@ export const useProducts = () => {
       console.log('✅ useProducts: Product updated successfully');
     } catch (err) {
       console.error('❌ useProducts: Error updating product:', err);
-      setError('Failed to update product');
+      if (err instanceof Error && err.message.includes('timeout')) {
+        setError('Update request timed out');
+      } else {
+        setError('Failed to update product');
+      }
     }
   };
 
@@ -203,9 +209,16 @@ export const useProducts = () => {
       
       const supabaseProduct = transformProductForSupabase(newProduct);
       
-      const { error } = await supabase
+      // Add timeout to insert operation
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Insert timeout')), 10000);
+      });
+
+      const insertPromise = supabase
         .from('products')
         .insert(supabaseProduct);
+
+      const { error } = await Promise.race([insertPromise, timeoutPromise]) as any;
 
       if (error) {
         console.error('❌ useProducts: Error adding product:', error);
@@ -218,7 +231,11 @@ export const useProducts = () => {
       console.log('✅ useProducts: Product added successfully');
     } catch (err) {
       console.error('❌ useProducts: Error adding product:', err);
-      setError('Failed to add product');
+      if (err instanceof Error && err.message.includes('timeout')) {
+        setError('Add request timed out');
+      } else {
+        setError('Failed to add product');
+      }
     }
   };
 
@@ -233,10 +250,17 @@ export const useProducts = () => {
     try {
       console.log('🗑️ useProducts: Deleting product with ID:', productId);
       
-      const { error } = await supabase
+      // Add timeout to delete operation
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Delete timeout')), 10000);
+      });
+
+      const deletePromise = supabase
         .from('products')
         .delete()
         .eq('id', productId);
+
+      const { error } = await Promise.race([deletePromise, timeoutPromise]) as any;
 
       if (error) {
         console.error('❌ useProducts: Error deleting product:', error);
@@ -249,7 +273,11 @@ export const useProducts = () => {
       console.log('✅ useProducts: Product deleted successfully');
     } catch (err) {
       console.error('❌ useProducts: Error deleting product:', err);
-      setError('Failed to delete product');
+      if (err instanceof Error && err.message.includes('timeout')) {
+        setError('Delete request timed out');
+      } else {
+        setError('Failed to delete product');
+      }
     }
   };
 
