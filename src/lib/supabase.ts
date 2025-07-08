@@ -20,3 +20,27 @@ if (!isSupabaseConfigured()) {
 export const supabase = supabaseUrl && supabaseAnonKey 
   ? createClient<Database>(supabaseUrl, supabaseAnonKey)
   : null
+
+// Test Supabase connection
+export const testSupabaseConnection = async () => {
+  if (!supabase) {
+    throw new Error('Supabase client not configured')
+  }
+  
+  try {
+    // Simple query to test connection
+    const { data, error } = await supabase
+      .from('products')
+      .select('id')
+      .limit(1)
+    
+    if (error) {
+      throw error
+    }
+    
+    return { success: true, data }
+  } catch (error) {
+    console.error('Supabase connection test failed:', error)
+    throw error
+  }
+}
