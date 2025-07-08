@@ -15,6 +15,7 @@ console.log('- Current origin:', typeof window !== 'undefined' ? window.location
 const isValidSupabaseUrl = (url: string | undefined): boolean => {
   if (!url) return false;
   if (url === 'YOUR_SUPABASE_URL' || url === 'your_supabase_project_url') return false;
+  if (url === 'https://xlkjflufnzwmjrjkkoool.supabase.co') return false; // Example URL from template
   if (!url.startsWith('https://')) return false;
   if (url.length < 20) return false; // Minimum reasonable length
   if (!url.includes('.supabase.co')) return false;
@@ -24,6 +25,7 @@ const isValidSupabaseUrl = (url: string | undefined): boolean => {
 const isValidSupabaseKey = (key: string | undefined): boolean => {
   if (!key) return false;
   if (key === 'YOUR_SUPABASE_ANON_KEY' || key === 'your_supabase_anon_key') return false;
+  if (key === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa2pmbHVmbnp3bWpyamtrb29sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2MDk3ODgsImV4cCI6MjA2NzE4NTc4OH0.1XZfUCKfUxf4kVPo1y8DIAlnGbpBv7ylq5bnsn-w32k') return false; // Example key from template
   if (key.length < 100) return false; // JWT tokens are typically much longer
   return true;
 };

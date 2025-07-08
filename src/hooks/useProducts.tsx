@@ -20,7 +20,9 @@ export const useProducts = () => {
 
       // Check if Supabase is configured before attempting to fetch
       if (!isSupabaseConfigured()) {
-        console.log('📦 useProducts: Supabase not configured, using mock products');
+        console.log('📦 useProducts: Supabase not configured properly. Please set up your Supabase project and update the .env file with your actual credentials.');
+        console.log('📦 useProducts: Using mock products for now.');
+        setError('Supabase not configured. Please check your .env file and ensure you have valid Supabase credentials.');
         setProducts(mockProducts);
         setLoading(false);
         return;
@@ -31,8 +33,13 @@ export const useProducts = () => {
       const connectionOk = await testSupabaseConnection();
       
       if (!connectionOk) {
-        console.log('📦 useProducts: Connection test failed, using mock products');
-        setError('Unable to connect to database. Using offline mode.');
+        console.log('📦 useProducts: Connection test failed. This usually means:');
+        console.log('  1. Your Supabase project URL or API key is incorrect');
+        console.log('  2. Your Supabase project is not active');
+        console.log('  3. Database migrations have not been run');
+        console.log('  4. Network connectivity issues');
+        console.log('📦 useProducts: Using mock products for now.');
+        setError('Unable to connect to Supabase. Please verify your credentials and project setup.');
         setProducts(mockProducts);
         setLoading(false);
         return;
