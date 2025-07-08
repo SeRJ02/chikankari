@@ -47,6 +47,8 @@ cp .env.example .env
 
 4. **Set up Supabase:**
 
+   **CRITICAL: The example .env file contains placeholder values that will NOT work. You MUST create your own Supabase project.**
+
    a. Go to [https://supabase.com](https://supabase.com) and create a new project
    
    b. Copy your project URL and anon key from Settings > API
@@ -56,6 +58,8 @@ cp .env.example .env
    VITE_SUPABASE_URL=https://your-project-id.supabase.co
    VITE_SUPABASE_ANON_KEY=your-anon-key-here
    ```
+   
+   **Note:** The placeholder values in `.env.example` are examples only and will cause connection errors if used.
 
 5. **Run the database migrations:**
 
