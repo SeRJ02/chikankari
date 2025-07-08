@@ -18,6 +18,25 @@ const isSupabaseConfigured = () => {
          key.length > 20;
 };
 
+// Helper function to test Supabase connection
+const testSupabaseConnection = async () => {
+  try {
+    console.log('🔍 Testing Supabase connection...');
+    const { data, error } = await supabase.from('products').select('count').limit(1);
+    
+    if (error) {
+      console.error('❌ Supabase connection test failed:', error);
+      return false;
+    }
+    
+    console.log('✅ Supabase connection test successful');
+    return true;
+  } catch (err) {
+    console.error('❌ Supabase connection test error:', err);
+    return false;
+  }
+};
+
 export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,6 +55,15 @@ export const useProducts = () => {
       // Check if Supabase is configured before attempting to fetch
       if (!isSupabaseConfigured()) {
         console.log('📦 useProducts: Supabase not configured, using mock products');
+        setProducts(mockProducts);
+        setLoading(false);
+        return;
+      }
+
+      // Test connection first
+      const connectionOk = await testSupabaseConnection();
+      if (!connectionOk) {
+        console.log('📦 useProducts: Connection test failed, using mock products');
         setProducts(mockProducts);
         setLoading(false);
         return;
@@ -88,7 +116,16 @@ export const useProducts = () => {
       }
     } catch (err) {
       console.error('❌ useProducts: Error loading products:', err);
-      console.log('📦 useProducts: Network error or connection failed, using mock products');
+      
+      // Provide more specific error information
+      if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
+        console.log('📦 useProducts: Network fetch failed - possible CORS, network, or URL issue. Using mock products.');
+        setError('Unable to connect to database. Using offline mode.');
+      } else {
+        console.log('📦 useProducts: Unexpected error occurred, using mock products');
+        setError('An unexpected error occurred. Using offline mode.');
+      }
+      
       // Always fallback to mock data on any error
       setProducts(mockProducts);
     } finally {

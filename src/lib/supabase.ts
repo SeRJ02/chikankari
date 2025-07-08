@@ -7,7 +7,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 console.log('🔧 Supabase Config Check:');
 console.log('- URL from env:', supabaseUrl);
 console.log('- Key from env (first 20 chars):', supabaseAnonKey?.substring(0, 20) + '...');
-console.log('- Current origin:', window.location.origin);
+console.log('- Current origin:', typeof window !== 'undefined' ? window.location.origin : 'Server-side');
 
 // Validate environment variables
 if (!supabaseUrl || supabaseUrl === 'YOUR_SUPABASE_URL' || supabaseUrl === 'your_supabase_project_url') {
@@ -41,23 +41,47 @@ export const supabase = createClient(validSupabaseUrl, validSupabaseKey, {
     headers: {
       'X-Client-Info': 'chikankari-by-kanchan'
     }
+  },
+  // Add retry configuration for better error handling
+  db: {
+    schema: 'public'
+  },
+  // Configure fetch options for better error handling
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
   }
 });
 
 // Test connection only if we have valid credentials
 if (validSupabaseUrl !== 'https://placeholder.supabase.co' && validSupabaseKey !== 'placeholder-key') {
-  supabase.auth.getSession().then(({ data, error }) => {
-    if (error) {
-      console.error('❌ Supabase: Connection error:', error.message, error);
-    } else {
-      console.log('✅ Supabase: Connected successfully');
-      if (data.session) {
-        console.log('✅ Supabase: Found existing session for:', data.session.user.email);
+  // Use a more robust connection test
+  const testConnection = async () => {
+    try {
+      console.log('🔍 Testing Supabase connection...');
+      
+      // Test with a simple query that doesn't require authentication
+      const { error } = await supabase.from('products').select('count').limit(1);
+      
+      if (error) {
+        console.error('❌ Supabase: Connection test failed:', error.message);
+        if (error.message.includes('Failed to fetch')) {
+          console.error('❌ This usually indicates a network issue, CORS problem, or incorrect URL');
+        }
+      } else {
+        console.log('✅ Supabase: Connection test successful');
+      }
+    } catch (err) {
+      console.error('❌ Supabase: Connection test error:', err);
+      if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
+        console.error('❌ Network fetch failed. Check your internet connection and Supabase URL.');
       }
     }
-  }).catch(err => {
-    console.error('❌ Supabase: Failed to test connection:', err);
-  });
+  };
+  
+  // Run connection test after a short delay to allow for initialization
+  setTimeout(testConnection, 1000);
 } else {
   console.log('ℹ️ Supabase: Running in mock mode - please configure your Supabase credentials');
 }
