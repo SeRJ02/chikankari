@@ -24,23 +24,38 @@ export const supabase = supabaseUrl && supabaseAnonKey
 // Test Supabase connection
 export const testSupabaseConnection = async () => {
   if (!supabase) {
-    throw new Error('Supabase client not configured')
+    console.log('❌ testSupabaseConnection: Supabase client not configured')
+    return false
   }
   
   try {
-    // Simple query to test connection
+    console.log('🔄 testSupabaseConnection: Testing connection...')
+    
+    // Simple query to test connection with timeout
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Connection test timeout')), 5000);
+    });
+
+    const queryPromise = supabase
+      .from('products')
+      .select('id')
+      .limit(1);
+
     const { data, error } = await supabase
       .from('products')
       .select('id')
       .limit(1)
+    const result = await Promise.race([queryPromise, timeoutPromise]) as any;
     
-    if (error) {
-      throw error
+    if (result.error) {
+      console.log('❌ testSupabaseConnection: Query error:', result.error.message)
+      return false
     }
     
-    return { success: true, data }
+    console.log('✅ testSupabaseConnection: Connection successful')
+    return true
   } catch (error) {
-    console.error('Supabase connection test failed:', error)
-    throw error
+    console.log('❌ testSupabaseConnection: Connection failed:', error instanceof Error ? error.message : 'Unknown error')
+    return false
   }
 }
