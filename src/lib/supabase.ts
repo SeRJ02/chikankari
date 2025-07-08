@@ -8,8 +8,10 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 export const isSupabaseConfigured = () => {
   return !!(supabaseUrl && 
            supabaseAnonKey && 
-           supabaseUrl !== 'your-supabase-url' && 
-           supabaseAnonKey !== 'your-supabase-anon-key' &&
+           supabaseUrl !== 'your_supabase_project_url' && 
+           supabaseUrl !== 'YOUR_SUPABASE_PROJECT_URL' &&
+           supabaseAnonKey !== 'your_supabase_anon_key' &&
+           supabaseAnonKey !== 'YOUR_SUPABASE_ANON_KEY' &&
            supabaseUrl.includes('supabase.co'))
 }
 
@@ -17,7 +19,7 @@ if (!isSupabaseConfigured()) {
   console.warn('Supabase not configured. Using mock data.')
 }
 
-export const supabase = supabaseUrl && supabaseAnonKey 
+export const supabase = isSupabaseConfigured()
   ? createClient<Database>(supabaseUrl, supabaseAnonKey)
   : null
 
