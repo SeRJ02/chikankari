@@ -4,6 +4,11 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+console.log('🔧 Supabase Config Check:');
+console.log('- URL from env:', supabaseUrl);
+console.log('- Key from env (first 20 chars):', supabaseAnonKey?.substring(0, 20) + '...');
+console.log('- Current origin:', window.location.origin);
+
 // Validate environment variables
 if (!supabaseUrl || supabaseUrl === 'YOUR_SUPABASE_URL' || supabaseUrl === 'your_supabase_project_url') {
   console.warn('⚠️ Supabase URL not configured. Using mock mode.');
@@ -31,6 +36,11 @@ export const supabase = createClient(validSupabaseUrl, validSupabaseKey, {
     persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce'
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'chikankari-by-kanchan'
+    }
   }
 });
 
@@ -38,13 +48,15 @@ export const supabase = createClient(validSupabaseUrl, validSupabaseKey, {
 if (validSupabaseUrl !== 'https://placeholder.supabase.co' && validSupabaseKey !== 'placeholder-key') {
   supabase.auth.getSession().then(({ data, error }) => {
     if (error) {
-      console.error('❌ Supabase: Connection error:', error);
+      console.error('❌ Supabase: Connection error:', error.message, error);
     } else {
       console.log('✅ Supabase: Connected successfully');
       if (data.session) {
         console.log('✅ Supabase: Found existing session for:', data.session.user.email);
       }
     }
+  }).catch(err => {
+    console.error('❌ Supabase: Failed to test connection:', err);
   });
 } else {
   console.log('ℹ️ Supabase: Running in mock mode - please configure your Supabase credentials');

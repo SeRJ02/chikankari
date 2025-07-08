@@ -163,6 +163,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
       console.log('🔐 Auth: Attempting login for:', email);
+      console.log('🔐 Auth: Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('🔐 Auth: Current origin:', window.location.origin);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -170,7 +172,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (error) {
-        console.error('❌ Auth: Login error:', error.message);
+        console.error('❌ Auth: Login error:', error.message, error);
+        console.error('❌ Auth: Error details:', {
+          status: error.status,
+          statusText: error.statusText,
+          name: error.name
+        });
         return { 
           success: false, 
           error: error.message || 'Login failed. Please check your credentials.' 
@@ -184,7 +191,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return { success: false, error: 'Login failed. Please try again.' };
     } catch (error) {
-      console.error('❌ Auth: Login error:', error);
+      console.error('❌ Auth: Unexpected login error:', error);
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        console.error('❌ Auth: Network/CORS error detected');
+        return { 
+          success: false, 
+          error: 'Network error. Please check your internet connection and try again.' 
+        };
+      }
       return { success: false, error: 'An unexpected error occurred. Please try again.' };
     }
   };
