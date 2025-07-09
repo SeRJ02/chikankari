@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Lock, Mail, AlertCircle, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, AlertCircle, CheckCircle, UserPlus } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { ADMIN_EMAIL } from '../../utils/constants';
 
@@ -16,7 +16,7 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const { login, isAuthenticated, user } = useAuth();
+  const { login, signup, isAuthenticated, user } = useAuth();
 
   // Auto-close if user becomes authenticated
   React.useEffect(() => {
@@ -70,6 +70,43 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
       email: ADMIN_EMAIL,
       password: 'admin123'
     });
+  };
+
+  const handleCreateAdmin = async () => {
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
+    console.log('👤 Login: Creating admin user...');
+
+    try {
+      const result = await signup(ADMIN_EMAIL, 'admin123', 'Admin User');
+      
+      if (result.success) {
+        console.log('✅ Login: Admin user created successfully');
+        setSuccess('Admin user created successfully! You can now log in.');
+        setFormData({
+          email: ADMIN_EMAIL,
+          password: 'admin123'
+        });
+      } else {
+        console.error('❌ Login: Failed to create admin user:', result.error);
+        if (result.error?.includes('already registered')) {
+          setError('Admin user already exists. Try logging in with the credentials.');
+          setFormData({
+            email: ADMIN_EMAIL,
+            password: 'admin123'
+          });
+        } else {
+          setError(result.error || 'Failed to create admin user.');
+        }
+      }
+    } catch (err) {
+      console.error('❌ Login: Unexpected error creating admin:', err);
+      setError('An unexpected error occurred while creating admin user.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -171,17 +208,38 @@ const Login: React.FC<LoginProps> = ({ onClose }) => {
             >
               Cancel
             </button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">or</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCreateAdmin}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center space-x-2 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <UserPlus size={20} />
+              <span>Create Admin User</span>
+            </button>
           </div>
         </form>
 
         <div className="mt-6 text-center">
           <div className="border-t border-gray-200 pt-4">
-            <p className="text-xs text-gray-500 mb-2">Demo credentials:</p>
+            <p className="text-xs text-gray-500 mb-2">Expected admin credentials:</p>
+            <p className="text-xs text-gray-600 mb-1">Email: {ADMIN_EMAIL}</p>
+            <p className="text-xs text-gray-600 mb-2">Password: admin123</p>
             <button
               onClick={handleDemoLogin}
               className="text-xs text-baby-pink hover:text-baby-pink/80 underline"
             >
-              Use demo login ({ADMIN_EMAIL})
+              Fill login form
             </button>
           </div>
         </div>
