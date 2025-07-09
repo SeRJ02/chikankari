@@ -30,6 +30,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         if (error) {
           console.error('❌ Auth: Error getting session:', error);
+          
+          // Handle refresh token errors by clearing local storage
+          if (error.message?.includes('refresh_token_not_found') || 
+              error.message?.includes('Invalid Refresh Token')) {
+            console.log('🧹 Auth: Clearing invalid refresh token from storage');
+            await supabase.auth.signOut();
+            localStorage.clear();
+          }
+          
           setAuthState({
             user: null,
             isLoading: false,

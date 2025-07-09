@@ -23,6 +23,16 @@ export const supabase = isSupabaseConfigured()
   ? createClient<Database>(supabaseUrl, supabaseAnonKey)
   : null
 
+// Handle auth errors globally
+if (supabase) {
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'TOKEN_REFRESHED' && !session) {
+      console.log('🧹 Auth: Token refresh failed, clearing storage');
+      localStorage.clear();
+    }
+  });
+}
+
 // Test Supabase connection
 export const testSupabaseConnection = async () => {
   if (!supabase) {
