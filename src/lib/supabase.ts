@@ -10,8 +10,10 @@ export const isSupabaseConfigured = () => {
            supabaseAnonKey && 
            supabaseUrl !== 'your_supabase_project_url' && 
            supabaseUrl !== 'YOUR_SUPABASE_PROJECT_URL' &&
+           supabaseUrl !== 'YOUR_ACTUAL_SUPABASE_PROJECT_URL' &&
            supabaseAnonKey !== 'your_supabase_anon_key' &&
            supabaseAnonKey !== 'YOUR_SUPABASE_ANON_KEY' &&
+           supabaseAnonKey !== 'YOUR_ACTUAL_SUPABASE_ANON_KEY' &&
            supabaseUrl.includes('supabase.co'))
 }
 
