@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Heart, ShoppingCart, Eye, Star } from 'lucide-react';
 import { Product } from '../types';
+import LazyImage from './LazyImage';
 
 interface ProductCardProps {
   product: Product;
@@ -9,7 +10,6 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onViewDetails }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   const discountPercentage = product.originalPrice 
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -29,18 +29,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onViewDetails }) => 
     >
       {/* Image Container */}
       <div className="relative overflow-hidden bg-gray-100">
-        {!imageLoaded && (
-          <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
-        )}
-        
-        <img
+        <LazyImage
           src={product.images[0]}
           alt={product.name}
-          className={`w-full h-48 sm:h-64 object-cover transition-all duration-500 ${
+          className="h-48 sm:h-64"
+          imgClassName={`transition-transform duration-500 ${
             isHovered ? 'scale-110' : 'scale-100'
-          } ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-          onLoad={() => setImageLoaded(true)}
-          loading="lazy"
+          }`}
         />
 
         {/* Overlay */}

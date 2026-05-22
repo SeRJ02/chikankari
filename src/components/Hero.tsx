@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight, Star } from 'lucide-react';
+import LazyImage from './LazyImage';
 
 const Hero = () => {
   const handleShopNow = () => {
@@ -13,10 +14,11 @@ const Hero = () => {
     <section id="home" className="relative min-h-screen flex items-center justify-center">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
+        <LazyImage
           src="https://www.giffywalls.in/cdn/shop/files/C766-Royal_Amusement.jpg"
           alt="Royal Amusement Park Background"
-          className="w-full h-full object-cover object-center"
+          eager
+          className="h-full w-full"
         />
         <div className="absolute inset-0 bg-black/30"></div>
       </div>

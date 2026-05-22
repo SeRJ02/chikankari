@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import ProductGallery from './components/ProductGallery';
-import ProductDetail from './components/ProductDetail';
 import About from './components/About';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import { Product } from './types';
+
+// The product detail modal is only needed once a product is opened,
+// so it is code-split out of the initial bundle.
+const ProductDetail = lazy(() => import('./components/ProductDetail'));
 
 function App() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -31,10 +34,18 @@ function App() {
       <Footer />
 
       {selectedProduct && (
-        <ProductDetail
-          product={selectedProduct}
-          onClose={handleCloseProductDetail}
-        />
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div className="loader" />
+            </div>
+          }
+        >
+          <ProductDetail
+            product={selectedProduct}
+            onClose={handleCloseProductDetail}
+          />
+        </Suspense>
       )}
     </div>
   );

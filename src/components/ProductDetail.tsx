@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Heart, Share2, Minus, Plus, Star, ArrowLeft, ArrowRight, MessageCircle } from 'lucide-react';
 import { Product } from '../types';
+import LazyImage from './LazyImage';
 import { WHATSAPP_NUMBER } from '../utils/constants';
 
 interface ProductDetailProps {
@@ -88,12 +89,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onClose }) => {
           <div className="space-y-4">
             {/* Main Image */}
             <div className="relative bg-gray-100 rounded-lg overflow-hidden">
-              <img
+              <LazyImage
                 src={product.images[selectedImageIndex]}
                 alt={product.name}
-                className="w-full h-64 sm:h-96 lg:h-[500px] object-cover"
+                className="h-64 sm:h-96 lg:h-[500px] rounded-lg"
               />
-              
+
               {/* Navigation Arrows */}
               {product.images.length > 1 && (
                 <>
@@ -131,10 +132,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onClose }) => {
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <img
+                    <LazyImage
                       src={image}
                       alt={`${product.name} ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      className="h-full w-full"
                     />
                   </button>
                 ))}
