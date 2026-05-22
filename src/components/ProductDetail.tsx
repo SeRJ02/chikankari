@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Heart, Share2, Minus, Plus, Star, ArrowLeft, ArrowRight, MessageCircle } from 'lucide-react';
 import { Product } from '../types';
 import LazyImage from './LazyImage';
-import { WHATSAPP_NUMBER } from '../utils/constants';
+import { buildWhatsAppUrl } from '../utils/whatsapp';
 
 interface ProductDetailProps {
   product: Product;
@@ -18,10 +18,33 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onClose }) => {
   const [activeTab, setActiveTab] = useState<'description' | 'care' | 'heritage'>('description');
 
   const handleWhatsAppContact = () => {
-    console.log('📱 ProductDetail: WhatsApp contact clicked for:', product.name);
-    const message = `Hi! I'm interested in the ${product.name} (₹${product.price}). Can you please provide more details?`;
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      alert('Please select a size before contacting us to purchase.');
+      return;
+    }
+
+    const message = [
+      'Hi! I would like to order this item from Chikankari by Kanchan:',
+      '',
+      `*${product.name}*`,
+      `Price: ₹${product.price.toLocaleString()}${
+        product.originalPrice
+          ? ` (was ₹${product.originalPrice.toLocaleString()})`
+          : ''
+      }`,
+      `Category: ${product.category}`,
+      `Fabric: ${product.fabric}`,
+      `Embroidery: ${product.embroideryTechnique}`,
+      `Size: ${selectedSize || 'Not specified'}`,
+      `Quantity: ${quantity}`,
+      `Availability: ${product.inStock ? 'In stock' : 'Out of stock'}`,
+      '',
+      `Photo: ${product.images[selectedImageIndex]}`,
+      '',
+      'Could you please help me complete this order?',
+    ].join('\n');
+
+    window.open(buildWhatsAppUrl(message), '_blank');
   };
 
   const handleShare = async () => {

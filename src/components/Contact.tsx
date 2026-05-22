@@ -1,12 +1,13 @@
 import React from 'react';
 import { MessageCircle, Instagram } from 'lucide-react';
 import { WHATSAPP_NUMBER, SOCIAL_MEDIA } from '../utils/constants';
+import { buildWhatsAppUrl } from '../utils/whatsapp';
 
 const Contact = () => {
   const handleWhatsAppClick = () => {
-    const message = "Hi! I'm interested in your Chikankari kurtas. Can you please provide more information?";
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    const message =
+      "Hi! I'm interested in your Chikankari kurtas. Can you please provide more information?";
+    window.open(buildWhatsAppUrl(message), '_blank');
   };
 
   const handleInstagramClick = () => {
