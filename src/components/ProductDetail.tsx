@@ -18,11 +18,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onClose }) => {
   const [activeTab, setActiveTab] = useState<'description' | 'care' | 'heritage'>('description');
 
   const handleWhatsAppContact = () => {
-    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-      alert('Please select a size before contacting us to purchase.');
-      return;
-    }
-
+    // Contacting to purchase is always allowed. Selected options are
+    // included when chosen; unselected ones are sent as "Not selected"
+    // so the message still reaches the owner.
     const message = [
       'Hi! I would like to order this item from Chikankari by Kanchan:',
       '',
@@ -35,7 +33,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onClose }) => {
       `Category: ${product.category}`,
       `Fabric: ${product.fabric}`,
       `Embroidery: ${product.embroideryTechnique}`,
-      `Size: ${selectedSize || 'Not specified'}`,
+      `Size: ${selectedSize || 'Not selected'}`,
       `Quantity: ${quantity}`,
       `Availability: ${product.inStock ? 'In stock' : 'Out of stock'}`,
       '',
