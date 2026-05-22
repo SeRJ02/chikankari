@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, Grid, List, Search } from 'lucide-react';
+import { Filter, Grid, List, Search, X } from 'lucide-react';
 import { Product } from '../types';
 import ProductCard from './ProductCard';
 import { useProducts } from '../hooks/useProducts';
@@ -15,6 +15,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ onProductSelect }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const categories = ['all', 'traditional', 'contemporary', 'premium', 'sets'];
   const sortOptions = [
@@ -115,18 +116,37 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ onProductSelect }) => {
         <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-8">
           <div className="flex flex-col gap-4">
             {/* Search */}
-            <div className="w-full">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            {searchOpen ? (
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
                   type="text"
+                  autoFocus
                   placeholder="Search products..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-baby-pink focus:border-transparent"
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-baby-pink focus:border-transparent text-sm"
                 />
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSearchOpen(false);
+                  }}
+                  aria-label="Close search"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X size={18} />
+                </button>
               </div>
-            </div>
+            ) : (
+              <button
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search products"
+                className="p-2 w-fit rounded-lg border border-gray-300 text-gray-600 hover:bg-baby-pink hover:text-white transition-colors duration-300"
+              >
+                <Search size={20} />
+              </button>
+            )}
 
             {/* Categories */}
             <div className="flex flex-wrap gap-2">
