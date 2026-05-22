@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, ShoppingBag } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { NAVIGATION_LINKS } from '../utils/constants';
 
 const Header = () => {
@@ -53,13 +53,6 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            <button className="p-2 hover:bg-blush rounded-full transition-colors duration-300">
-              <ShoppingBag size={20} className="text-dark-gray" />
-            </button>
-          </div>
-
           {/* Mobile Menu Button */}
           <button
             className="md:hidden p-2 hover:bg-blush rounded-full transition-colors duration-300"
@@ -82,12 +75,6 @@ const Header = () => {
                   {link.name}
                 </button>
               ))}
-
-              <div className="flex items-center space-x-4 pt-4 border-t border-gray-200">
-                <button className="p-2 hover:bg-blush rounded-full transition-colors duration-300">
-                  <ShoppingBag size={20} className="text-dark-gray" />
-                </button>
-              </div>
             </nav>
           </div>
         )}
