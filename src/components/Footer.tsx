@@ -10,9 +10,11 @@ const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4 col-span-2 lg:col-span-1">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-baby-pink rounded-full flex items-center justify-center">
-                <span className="text-white font-heading font-bold">CK</span>
-              </div>
+              <img
+                src="/favicon.svg"
+                alt="Chikankari by Kanchan logo"
+                className="w-10 h-10 rounded-full"
+              />
               <div className="text-lg font-heading font-bold">
                 Chikankari by Kanchan
               </div>
