@@ -5,6 +5,7 @@ import ProductGallery from './components/ProductGallery';
 import About from './components/About';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import { FavoritesProvider } from './hooks/useFavorites';
 import { Product } from './types';
 
 // The product detail modal is only needed once a product is opened,
@@ -23,31 +24,33 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-soft-white">
-      <Header />
-      <main>
-        <Hero />
-        <ProductGallery onProductSelect={handleProductSelect} />
-        <About />
-        <Contact />
-      </main>
-      <Footer />
+    <FavoritesProvider>
+      <div className="min-h-screen bg-soft-white">
+        <Header />
+        <main>
+          <Hero />
+          <ProductGallery onProductSelect={handleProductSelect} />
+          <About />
+          <Contact />
+        </main>
+        <Footer />
 
-      {selectedProduct && (
-        <Suspense
-          fallback={
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div className="loader" />
-            </div>
-          }
-        >
-          <ProductDetail
-            product={selectedProduct}
-            onClose={handleCloseProductDetail}
-          />
-        </Suspense>
-      )}
-    </div>
+        {selectedProduct && (
+          <Suspense
+            fallback={
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                <div className="loader" />
+              </div>
+            }
+          >
+            <ProductDetail
+              product={selectedProduct}
+              onClose={handleCloseProductDetail}
+            />
+          </Suspense>
+        )}
+      </div>
+    </FavoritesProvider>
   );
 }
 

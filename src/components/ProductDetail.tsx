@@ -3,6 +3,7 @@ import { X, Heart, Share2, Minus, Plus, Star, ArrowLeft, ArrowRight, MessageCirc
 import { Product } from '../types';
 import LazyImage from './LazyImage';
 import { buildWhatsAppUrl } from '../utils/whatsapp';
+import { useFavorites } from '../hooks/useFavorites';
 
 interface ProductDetailProps {
   product: Product;
@@ -15,6 +16,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onClose }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const liked = isFavorite(product.id);
   const [activeTab, setActiveTab] = useState<'description' | 'care' | 'heritage'>('description');
 
   const handleWhatsAppContact = () => {
@@ -267,10 +270,19 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onClose }) => {
               </button>
 
               <div className="flex space-x-3">
-                <button className="flex-1 btn-secondary flex items-center justify-center space-x-2 text-sm py-2">
-                  <Heart size={16} />
-                  <span className="hidden sm:inline">Add to Wishlist</span>
-                  <span className="sm:hidden">Wishlist</span>
+                <button
+                  onClick={() => toggleFavorite(product.id)}
+                  className="flex-1 btn-secondary flex items-center justify-center space-x-2 text-sm py-2"
+                >
+                  <Heart
+                    size={16}
+                    className={liked ? 'text-baby-pink' : ''}
+                    fill={liked ? 'currentColor' : 'none'}
+                  />
+                  <span className="hidden sm:inline">
+                    {liked ? 'Liked' : 'Add to Wishlist'}
+                  </span>
+                  <span className="sm:hidden">{liked ? 'Liked' : 'Wishlist'}</span>
                 </button>
                 <button 
                   onClick={handleShare}

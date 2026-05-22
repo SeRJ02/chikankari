@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Heart, ShoppingCart, Eye, Star } from 'lucide-react';
+import { Heart, Eye, Star } from 'lucide-react';
 import { Product } from '../types';
 import LazyImage from './LazyImage';
+import { useFavorites } from '../hooks/useFavorites';
 
 interface ProductCardProps {
   product: Product;
@@ -10,8 +11,10 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onViewDetails }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const liked = isFavorite(product.id);
 
-  const discountPercentage = product.originalPrice 
+  const discountPercentage = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
@@ -41,27 +44,32 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onViewDetails }) => 
         {/* Overlay */}
         <div className={`absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300`}>
           {/* Action Buttons */}
-          <div className={`absolute top-2 right-2 flex flex-col space-y-1 transform ${
-            isHovered ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
-          } transition-all duration-300`}>
-            <button 
-              className="p-1.5 bg-white rounded-full shadow-md hover:bg-baby-pink hover:text-white transition-colors duration-300"
+          <div className="absolute top-2 right-2 flex flex-col space-y-1.5">
+            <button
+              aria-label={liked ? 'Remove from liked products' : 'Add to liked products'}
+              className="p-1.5 bg-white rounded-full shadow-md transition-colors duration-300"
               onClick={(e) => {
                 e.stopPropagation();
-                console.log('❤️ ProductCard: Heart button clicked for:', product.name);
+                toggleFavorite(product.id);
               }}
             >
-              <Heart size={12} />
+              <Heart
+                size={14}
+                className={liked ? 'text-baby-pink' : 'text-gray-400'}
+                fill={liked ? 'currentColor' : 'none'}
+              />
             </button>
-            <button 
-              className="p-1.5 bg-white rounded-full shadow-md hover:bg-baby-pink hover:text-white transition-colors duration-300"
+            <button
+              aria-label="View details"
+              className={`p-1.5 bg-white rounded-full shadow-md text-gray-600 hover:bg-baby-pink hover:text-white transition-all duration-300 ${
+                isHovered ? 'opacity-100' : 'opacity-0'
+              }`}
               onClick={(e) => {
                 e.stopPropagation();
-                console.log('👁️ ProductCard: Eye button clicked for:', product.name);
                 onViewDetails(product);
               }}
             >
-              <Eye size={12} />
+              <Eye size={14} />
             </button>
           </div>
 
@@ -79,21 +87,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onViewDetails }) => 
             </div>
           )}
 
-          {/* Quick Add Button */}
-          <div className={`absolute bottom-2 left-2 right-2 transform ${
-            isHovered ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
-          } transition-all duration-300`}>
-            <button 
-              className="w-full bg-baby-pink hover:bg-baby-pink/90 text-white py-1.5 rounded-lg font-medium flex items-center justify-center space-x-1 transition-colors duration-300 text-sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log('🛒 ProductCard: Quick Add button clicked for:', product.name);
-              }}
-            >
-              <ShoppingCart size={12} />
-              <span>Quick Add</span>
-            </button>
-          </div>
         </div>
       </div>
 
