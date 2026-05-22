@@ -151,7 +151,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onClose }) => {
                   {product.category}
                 </span>
                 <div className="flex items-center space-x-1">
-                  <Star className="text-muted-gold" size={14} className="sm:w-4 sm:h-4" fill="currentColor" />
+                  <Star className="text-muted-gold sm:w-4 sm:h-4" size={14} fill="currentColor" />
                   <span className="text-xs sm:text-sm text-gray-600">4.8 (124 reviews)</span>
                 </div>
               </div>

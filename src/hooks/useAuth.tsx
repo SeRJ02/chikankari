@@ -21,7 +21,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     console.log('🔐 Auth: Initializing authentication...');
-    
+
+    // If Supabase is not configured, skip auth entirely and finish loading
+    if (!supabase) {
+      console.warn('⚠️ Auth: Supabase not configured. Authentication disabled.');
+      setAuthState({
+        user: null,
+        isLoading: false,
+        isAuthenticated: false,
+      });
+      return;
+    }
+
     // Get initial session
     const getInitialSession = async () => {
       try {
@@ -170,6 +181,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    if (!supabase) {
+      return { success: false, error: 'Authentication is not available. Supabase is not configured.' };
+    }
     try {
       console.log('🔐 Auth: Attempting login for:', email);
       console.log('🔐 Auth: Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
@@ -213,6 +227,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
+    if (!supabase) {
+      setAuthState({ user: null, isLoading: false, isAuthenticated: false });
+      return;
+    }
     try {
       console.log('👋 Auth: Logging out...');
       const { error } = await supabase.auth.signOut();
@@ -227,6 +245,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signup = async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string }> => {
+    if (!supabase) {
+      return { success: false, error: 'Authentication is not available. Supabase is not configured.' };
+    }
     try {
       console.log('📝 Auth: Attempting signup for:', email);
       

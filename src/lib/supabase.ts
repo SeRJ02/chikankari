@@ -55,10 +55,6 @@ export const testSupabaseConnection = async () => {
       .select('id')
       .limit(1);
 
-    const { data, error } = await supabase
-      .from('products')
-      .select('id')
-      .limit(1)
     const result = await Promise.race([queryPromise, timeoutPromise]) as any;
     
     if (result.error) {
