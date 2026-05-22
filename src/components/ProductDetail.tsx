@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Heart, Share2, ShoppingCart, Minus, Plus, Star, ArrowLeft, ArrowRight, MessageCircle } from 'lucide-react';
+import { X, Heart, Share2, Minus, Plus, Star, ArrowLeft, ArrowRight, MessageCircle } from 'lucide-react';
 import { Product } from '../types';
 import { WHATSAPP_NUMBER } from '../utils/constants';
 
@@ -268,7 +268,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, onClose }) => {
             {tabs.map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'description' | 'care' | 'heritage')}
                 className={`px-4 sm:px-6 py-3 font-medium transition-colors duration-300 text-sm sm:text-base whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-b-2 border-baby-pink text-baby-pink'

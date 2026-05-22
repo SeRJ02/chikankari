@@ -16,19 +16,6 @@ export interface Product {
   featured: boolean;
 }
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: 'admin' | 'user';
-}
-
-export interface AuthState {
-  user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-}
-
 export interface CartItem {
   product: Product;
   quantity: number;

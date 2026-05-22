@@ -6,15 +6,14 @@ A beautiful e-commerce website showcasing authentic Lucknowi Chikankari kurtas, 
 
 - **Responsive Design**: Optimized for all devices from mobile to desktop
 - **Product Gallery**: Beautiful product showcase with filtering and search
-- **Admin Dashboard**: Complete product management system
-- **Authentication**: Secure login system with role-based access
-- **Database Integration**: Supabase backend for data management
+- **Sanity CMS**: Product catalog managed through Sanity's hosted Studio
+- **Sample Data Fallback**: Runs out of the box with sample products when Sanity is not configured
 - **Modern UI**: Clean, elegant design with smooth animations
 
 ## Tech Stack
 
 - **Frontend**: React 18, TypeScript, Tailwind CSS
-- **Backend**: Supabase (PostgreSQL, Authentication, Real-time)
+- **Content**: Sanity.io (headless CMS)
 - **Icons**: Lucide React
 - **Build Tool**: Vite
 - **Deployment**: Netlify
@@ -23,9 +22,8 @@ A beautiful e-commerce website showcasing authentic Lucknowi Chikankari kurtas, 
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
-- Supabase account
 
 ### Installation
 
@@ -45,83 +43,60 @@ npm install
 cp .env.example .env
 ```
 
-4. **Set up Supabase:**
-
-   **CRITICAL: The example .env file contains placeholder values that will NOT work. You MUST create your own Supabase project.**
-
-   a. Go to [https://supabase.com](https://supabase.com) and create a new project
-   
-   b. Copy your project URL and anon key from Settings > API
-   
-   c. Update the `.env` file with your Supabase credentials:
-   ```env
-   VITE_SUPABASE_URL=https://your-project-id.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key-here
-   ```
-   
-   **Note:** The placeholder values in `.env.example` are examples only and will cause connection errors if used.
-
-5. **Run the database migrations:**
-
-   a. In your Supabase dashboard, go to the SQL Editor
-   
-   b. Run each migration file in order:
-      - `supabase/migrations/001_initial_setup.sql`
-      - `supabase/migrations/002_seed_data.sql`
-      - `supabase/migrations/003_additional_features.sql`
-
-6. Start the development server:
+4. Start the development server:
 ```bash
 npm run dev
 ```
 
-## Database Setup
+The app runs immediately with bundled sample products. Configure Sanity (below) to serve a live, editable catalog.
 
-The project uses Supabase for the backend. The database schema includes:
+## Sanity Setup
 
-### Tables:
-- **profiles**: User profiles with role-based access
-- **products**: Product catalog with full e-commerce features
-- **categories**: Product categorization
-- **orders**: Order management (future feature)
-- **order_items**: Order details (future feature)
+The product catalog is sourced from a [Sanity.io](https://www.sanity.io/) project. Until it is configured, the app falls back to the sample data in `src/data/products.ts`.
 
-### Key Features:
-- **Row Level Security (RLS)**: Enabled on all tables
-- **Admin Role**: Special permissions for product management
-- **Auto-generated profiles**: Created automatically on user signup
-- **Full-text search**: Advanced product search capabilities
-- **Inventory management**: Stock tracking and low-stock alerts
+1. Create a project at [https://www.sanity.io/](https://www.sanity.io/).
+2. Copy your **Project ID** from the project settings.
+3. Add the values to your `.env` file:
+   ```env
+   VITE_SANITY_PROJECT_ID=your_sanity_project_id
+   VITE_SANITY_DATASET=production
+   VITE_SANITY_API_VERSION=2024-01-01
+   ```
+4. In Sanity, create a `product` document type with the following fields, matching the app's `Product` type:
 
-### Migration Files:
+   | Field                | Type            |
+   |----------------------|-----------------|
+   | `name`               | string          |
+   | `price`              | number          |
+   | `originalPrice`      | number          |
+   | `images`             | array of images |
+   | `description`        | text            |
+   | `fabric`             | string          |
+   | `embroideryTechnique`| string          |
+   | `sizes`              | array of strings|
+   | `careInstructions`   | array of strings|
+   | `heritageStory`      | text            |
+   | `inStock`            | boolean         |
+   | `stockCount`         | number          |
+   | `category`           | string          |
+   | `featured`           | boolean         |
 
-1. **001_initial_setup.sql**: Creates core tables (profiles, products) with RLS policies
-2. **002_seed_data.sql**: Inserts sample product data
-3. **003_additional_features.sql**: Adds categories, orders, search functions, and views
-
-## Admin Access
-
-- **Email**: admin@lucknowchikan.com
-- **Password**: admin123 (Change this in production!)
-
-The admin user is automatically assigned admin role when signing up with the configured admin email.
+5. Add products in your Sanity Studio. They appear on the site automatically.
 
 ## Environment Variables
 
 Create a `.env` file in the root directory with the following variables:
 
 ```env
-# Supabase Configuration (Required)
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+# Sanity Configuration
+VITE_SANITY_PROJECT_ID=your_sanity_project_id
+VITE_SANITY_DATASET=production
+VITE_SANITY_API_VERSION=2024-01-01
 
 # Contact Information
 VITE_WHATSAPP_NUMBER=+91XXXXXXXXXX
 VITE_COMPANY_EMAIL=info@chikankaribykanchan.com
 VITE_COMPANY_ADDRESS=Lucknow, Uttar Pradesh, India
-
-# Admin Configuration
-VITE_ADMIN_EMAIL=admin@lucknowchikan.com
 
 # Social Media Links
 VITE_INSTAGRAM_URL=https://www.instagram.com/kanchanchikankari/?hl=en
@@ -134,79 +109,37 @@ VITE_YOUTUBE_URL=https://youtube.com/chikankaribykanchan
 
 ### Netlify Deployment
 
-1. Build the project:
-```bash
-npm run build
-```
+1. Connect your GitHub repository to Netlify.
+2. Set build command: `npm run build`
+3. Set publish directory: `dist`
+4. Add the environment variables above in the Netlify dashboard.
 
-2. The build output will be in the `dist` directory.
-
-3. Deploy to Netlify:
-   - Connect your GitHub repository to Netlify
-   - Set build command: `npm run build`
-   - Set publish directory: `dist`
-   - Add environment variables in Netlify dashboard
+The site loads with sample data even if no environment variables are set, so a missing configuration will not produce a blank page.
 
 ## Project Structure
 
 ```
 src/
 ├── components/          # Reusable UI components
-│   ├── admin/          # Admin-specific components
-│   ├── Header.tsx      # Navigation header
-│   ├── Hero.tsx        # Landing page hero
+│   ├── Header.tsx       # Navigation header
+│   ├── Hero.tsx         # Landing page hero
 │   ├── ProductGallery.tsx  # Product listing
 │   └── ...
-├── pages/              # Page components
-│   └── admin/          # Admin pages
-├── hooks/              # Custom React hooks
-│   ├── useAuth.tsx     # Authentication hook
-│   └── useProducts.tsx # Product management hook
-├── lib/                # Third-party library configurations
-│   └── supabase.ts     # Supabase client setup
-├── types/              # TypeScript type definitions
-├── utils/              # Utility functions and constants
-├── data/               # Mock data and constants
-└── index.css           # Global styles
-
-supabase/
-└── migrations/         # Database migration files
-    ├── 001_initial_setup.sql
-    ├── 002_seed_data.sql
-    └── 003_additional_features.sql
+├── hooks/               # Custom React hooks
+│   └── useProducts.tsx  # Loads products from Sanity (with fallback)
+├── lib/                 # Third-party library configurations
+│   └── sanity.ts        # Sanity client setup
+├── types/               # TypeScript type definitions
+├── utils/               # Utility functions and constants
+├── data/                # Sample product data
+└── index.css            # Global styles
 ```
-
-## API Endpoints
-
-The application uses Supabase's auto-generated REST API:
-
-- `GET /rest/v1/products` - List all products
-- `POST /rest/v1/products` - Create product (admin only)
-- `PATCH /rest/v1/products?id=eq.{id}` - Update product (admin only)
-- `DELETE /rest/v1/products?id=eq.{id}` - Delete product (admin only)
-- `GET /rest/v1/profiles` - User profiles
-- `GET /rest/v1/categories` - Product categories
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
 
 ## Troubleshooting
 
-### Common Issues:
-
-1. **Supabase connection errors**: Verify your URL and anon key in `.env`
-2. **Authentication issues**: Check if the admin email matches `VITE_ADMIN_EMAIL`
-3. **Migration errors**: Run migrations in the correct order
-4. **RLS policy errors**: Ensure user has proper role assigned
-
-### Debug Mode:
-
-The application includes extensive console logging. Check browser console for detailed error messages.
+1. **No products / sample data shown**: Verify `VITE_SANITY_PROJECT_ID` is set and a `product` document type exists in Sanity.
+2. **Images not loading**: Ensure the `images` field uses Sanity image assets, or raw image URLs.
+3. **Debug mode**: The app logs product-loading status to the browser console.
 
 ## License
 

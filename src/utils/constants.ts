@@ -2,8 +2,6 @@
 export const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '+91XXXXXXXXXX';
 export const COMPANY_EMAIL = import.meta.env.VITE_COMPANY_EMAIL || 'info@chikankaribykanchan.com';
 export const COMPANY_ADDRESS = import.meta.env.VITE_COMPANY_ADDRESS || 'Lucknow, Uttar Pradesh, India';
-export const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'admin@lucknowchikan.com';
-
 // Social Media URLs
 export const SOCIAL_MEDIA = {
   instagram: import.meta.env.VITE_INSTAGRAM_URL || 'https://www.instagram.com/kanchanchikankari/?hl=en',
@@ -38,16 +36,13 @@ techniques with contemporary designs to create pieces that are both timeless and
 
 // Validation helper to check if required environment variables are set
 export const validateEnvironmentVariables = () => {
-  const requiredVars = [
-    'VITE_SUPABASE_URL',
-    'VITE_SUPABASE_ANON_KEY'
-  ];
+  const requiredVars = ['VITE_SANITY_PROJECT_ID'];
 
   const missingVars = requiredVars.filter(varName => !import.meta.env[varName]);
-  
+
   if (missingVars.length > 0) {
     console.warn('Missing environment variables:', missingVars);
-    console.warn('Please check your .env file and ensure all required variables are set.');
+    console.warn('The app will run with sample data until Sanity is configured.');
   }
 
   return missingVars.length === 0;

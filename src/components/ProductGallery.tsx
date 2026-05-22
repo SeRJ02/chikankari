@@ -9,7 +9,7 @@ interface ProductGalleryProps {
 }
 
 const ProductGallery: React.FC<ProductGalleryProps> = ({ onProductSelect }) => {
-  const { products, loading, error } = useProducts();
+  const { products, loading } = useProducts();
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -88,22 +88,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ onProductSelect }) => {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (error) {
-    console.error('❌ ProductGallery: Error loading products:', error);
-    return (
-      <section id="shop" className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <h2 className="font-heading text-4xl font-bold text-dark-gray mb-4">
-              Our Collection
-            </h2>
-            <p className="text-red-600">{error}</p>
           </div>
         </div>
       </section>
