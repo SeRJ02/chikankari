@@ -1,7 +1,10 @@
 import { createClient } from '@sanity/client';
 import imageUrlBuilder from '@sanity/image-url';
 
-const projectId = import.meta.env.VITE_SANITY_PROJECT_ID;
+// The project id is not a secret; it ships in the client bundle of every
+// Sanity-powered site. Defaulting to it lets the storefront work without
+// any env vars configured.
+const projectId = import.meta.env.VITE_SANITY_PROJECT_ID || 'k7a2zjl7';
 const dataset = import.meta.env.VITE_SANITY_DATASET || 'production';
 const apiVersion = import.meta.env.VITE_SANITY_API_VERSION || '2024-01-01';
 

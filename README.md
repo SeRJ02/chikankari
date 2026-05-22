@@ -52,36 +52,24 @@ The app runs immediately with bundled sample products. Configure Sanity (below) 
 
 ## Sanity Setup
 
-The product catalog is sourced from a [Sanity.io](https://www.sanity.io/) project. Until it is configured, the app falls back to the sample data in `src/data/products.ts`.
+The product catalog is sourced from a [Sanity.io](https://www.sanity.io/) project (`k7a2zjl7` / `production` by default). If the dataset has no products, or Sanity is unreachable, the app falls back to the sample data in `src/data/products.ts`.
 
-1. Create a project at [https://www.sanity.io/](https://www.sanity.io/).
-2. Copy your **Project ID** from the project settings.
-3. Add the values to your `.env` file:
-   ```env
-   VITE_SANITY_PROJECT_ID=your_sanity_project_id
-   VITE_SANITY_DATASET=production
-   VITE_SANITY_API_VERSION=2024-01-01
-   ```
-4. In Sanity, create a `product` document type with the following fields, matching the app's `Product` type:
+### Embedded Studio
 
-   | Field                | Type            |
-   |----------------------|-----------------|
-   | `name`               | string          |
-   | `price`              | number          |
-   | `originalPrice`      | number          |
-   | `images`             | array of images |
-   | `description`        | text            |
-   | `fabric`             | string          |
-   | `embroideryTechnique`| string          |
-   | `sizes`              | array of strings|
-   | `careInstructions`   | array of strings|
-   | `heritageStory`      | text            |
-   | `inStock`            | boolean         |
-   | `stockCount`         | number          |
-   | `category`           | string          |
-   | `featured`           | boolean         |
+A Sanity Studio is bundled into this app and served at **`/studio`** (e.g. `https://your-site.vercel.app/studio`). It is lazy-loaded, so it adds nothing to the storefront bundle. Manage products there after logging in with your Sanity account — the `product` schema is defined in `src/sanity/schemaTypes/product.ts`.
 
-5. Add products in your Sanity Studio. They appear on the site automatically.
+### Configuration
+
+- **Project**: the project id defaults to `k7a2zjl7`. Override with the env vars below if needed.
+  ```env
+  VITE_SANITY_PROJECT_ID=k7a2zjl7
+  VITE_SANITY_DATASET=production
+  VITE_SANITY_API_VERSION=2024-01-01
+  ```
+- **CORS**: in Sanity Manage → API → CORS Origins, add every origin the site runs on (`http://localhost:5173`, your Vercel/Netlify URLs). Enable **Allow credentials** so the embedded Studio login works.
+- **Dataset**: keep `production` public so the storefront can read products without a token.
+
+Products added in the Studio appear on the site automatically — the schema field names match the app's `Product` type.
 
 ## Environment Variables
 
